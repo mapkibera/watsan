@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Map Kibera Water and Sanitation in COVID-19</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' />
+
+    <style>
+        body { margin:0; padding:0; overflow:hidden;}
+        #map { position:absolute; top:0; bottom:0; left:400px; right:0px;}
+        #sidebar{
+            width:400px;
+            overflow:hidden;
+            top: 0px;
+            bottom: 0px;
+            position:absolute;
+        }
+        #menu {
+          position: relative;
+          left: 400px;
+          padding: 10px;
+          background: #fff;
+          width: 240px;
+          font-family: 'Open Sans', sans-serif;
+        }
+        input {
+            vertical-align: inherit
+        }
+
+        .half {
+            height:50%;
+            overflow:scroll;
+        }
+
+        .forty {
+          height: 40%;
+          overflow: scroll;
+        }
+        .sixty {
+          height: 60%;
+          overflow: scroll;
+        }
+
+        .title {
+            padding:10px;
+            text-transform:uppercase;
+            margin-bottom:0px;
+        }
+        .count {
+          float: right;
+        }
+    </style>
+</head>
+<body>
+  <div><a href="nairobi">Nairobi</a></div>
+</body>
+</html>
