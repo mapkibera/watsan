@@ -20,7 +20,7 @@ def convert_geojson(locations):
   logging.info("convert_geojson start")
 
   for l in locations:
-    os.system("osmtogeojson -e build/" + l + "-features-osm.xml > build/" + l + "-features-osm.geojson")
+    os.system("osmtogeojson build/" + l + "-features-osm.xml > build/" + l + "-features-osm.geojson")
 
   logging.info("convert_geojson complete")
 
