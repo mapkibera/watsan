@@ -19,9 +19,9 @@ locations = {
 tag = '"amenity"="water_point"'
 startdate = '2021-04-01T00:00:00Z'
 
-sync_osm(locations, tag, startdate)
-convert_geojson(locations)
-merge_geojson(locations)
+#sync_osm(locations, tag, startdate)
+#convert_geojson(locations)
+#merge_geojson(locations)
 
 ##Store images locally, and produce modified XML for upload with new image locations
-#cache_images(locations)
+cache_images(locations, "https://mapkibera.github.io/watsan/data/")

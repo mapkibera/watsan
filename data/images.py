@@ -26,8 +26,8 @@ def get_file_path(cache_dir, img_url, size):
 
   return cache_dir + size + fileExtension
 
-def cache_image(osm_id,img_type, img_url):
-  if osm_has_cache(img_url):
+def cache_image(osm_id, img_url, prefix):
+  if osm_has_cache(img_url, prefix):
     return
 
   if os.path.exists('cookies.txt'):
@@ -46,7 +46,7 @@ def cache_image(osm_id,img_type, img_url):
     try:
       im = Image.open(file_path)
     except IOError:
-      print "IMAGE ERROR, can't open image, http://www.osm.org/" + osm_id + ", " + img_type + "," + img_url
+      print "IMAGE ERROR, can't open image, http://www.osm.org/" + osm_id + ", " + img_url
       return
 
     size = 1200, 900
@@ -55,7 +55,7 @@ def cache_image(osm_id,img_type, img_url):
         im.thumbnail(size)
         im.save(get_file_path(cache_dir, img_url, 'large'))
       except KeyError:
-        print "IMAGE ERROR,unknown extension,http://www.osm.org/" + osm_id + "," + img_type + "," + img_url
+        print "IMAGE ERROR,unknown extension,http://www.osm.org/" + osm_id + ", " + img_url
         return
 
     size = 300, 225
@@ -64,77 +64,45 @@ def cache_image(osm_id,img_type, img_url):
         im.thumbnail(size)
         im.save(get_file_path(cache_dir, img_url, 'med'))
       except KeyError:
-        print "IMAGE ERROR,unknown extension,http://www.osm.org/" + osm_id + "," + img_type + "," + img_url
+        print "IMAGE ERROR,unknown extension,http://www.osm.org/" + osm_id + ", " + img_url
         return
 
   else:
-    print "IMAGE ERROR,orig missing,http://www.osm.org/" + osm_id + "," + img_type + "," + img_url
+    print "IMAGE ERROR,orig missing,http://www.osm.org/" + osm_id + ", " + img_url
 
-def get_image_cache(osm_id, img_type, img_url, cache_size):
+def get_image_cache(osm_id, img_url, cache_size, prefix):
   slug = slug_image(img_url)
-  cache_path = "https://mapkibera.github.io/counties/data/images/cache/" + osm_id + '/' + slug + '/'
+  cache_path = prefix + osm_id + '/' + slug + '/'
   fileName, fileExtension = os.path.splitext(img_url)
   return cache_path + cache_size + fileExtension
 
-def osm_has_cache(img_url):
-  return img_url.find("https://mapkibera.github.io/counties/data/images/cache/") == 0
+def osm_has_cache(img_url, prefix):
+  return img_url.find(prefix) == 0
 
-def cache_images(locations):
+def cache_images(locations,prefix):
+  _cache_images(prefix)
   for l in locations:
-    cache_images_county(l)
-    xml_with_cache(l)
+    xml_with_cache(l, prefix)
 
-def cache_images_location(location):
-  combined = geojson.loads(readfile("site/" + county + "-projects-matched-merged.geojson"))
+def _cache_images(prefix):
+  combined = geojson.loads(readfile("site/features-osm.geojson"))
   for index, feature in enumerate(combined.features):
     images = []
     large_images = []
-    for prop in ["image","image:project"]:
-      if prop in feature['properties']:
-        cache_image(feature['properties']['osm:id'], prop, feature['properties'][prop])
+    if "image" in feature['properties']:
+      cache_image(feature['id'], feature['properties']['image'], prefix)
 
-def xml_with_cache(location):
-  tree = ET.parse('build/' + ward + '-projects-osm.xml')
+def xml_with_cache(location, prefix):
+  tree = ET.parse('build/' + location + '-features-osm.xml')
   nodes = tree.findall('node')
   for node in nodes:
-    for prop in ["image","image:project"]:
-      tag = node.find('.//tag[@k="' + prop + '"]')
-      if tag != None:
-        cache_dir = get_cache_dir(node.attrib['id'], tag.attrib['v'])
-        file_path = get_file_path(cache_dir, tag.attrib['v'], 'orig')
-        if os.path.exists(file_path):
-          tag.attrib['v'] = "https://mapkibera.github.io/counties/data/" + file_path
-          node.attrib['action'] = 'modify'
-#        else:
-#          img_tmp = tag.attrib['v'].replace("mapkibera","westpokot_county")
-#          cache_dir = get_cache_dir(node.attrib['id'], img_tmp)
-#          file_path = get_file_path(cache_dir, img_tmp, 'orig')
-#          if os.path.exists(file_path):
-#            tag.attrib['v'] = "https://mapkibera.github.io/counties/data/" + file_path
-#            node.attrib['action'] = 'modify'
+    tag = node.find('.//tag[@k="image"]')
+    if tag != None:
+      cache_dir = get_cache_dir("node/" + node.attrib['id'], tag.attrib['v'])
+      file_path = get_file_path(cache_dir, tag.attrib['v'], 'orig')
+      if os.path.exists(file_path):
+        tag.attrib['v'] = prefix + file_path
+        node.attrib['action'] = 'modify'
 
-  writefile('build/' + ward + '-projects-osm-images.xml',ET.tostring(tree.getroot()))
 
-  tree = ET.parse('build/' + ward + '-projects-ways-osm.xml')
-  ways = tree.findall('way')
-  for way in ways:
-    for prop in ["image","image:project"]:
-      tag = way.find('.//tag[@k="' + prop + '"]')
-      if tag != None:
-        cache_dir = get_cache_dir(way.attrib['id'], tag.attrib['v'])
-        file_path = get_file_path(cache_dir, tag.attrib['v'], 'orig')
-        if os.path.exists(file_path):
-          tag.attrib['v'] = "https://mapkibera.github.io/counties/data/" + file_path
-          way.attrib['action'] = 'modify'
-#        else:
-#          print('try westpokot ' + way.attrib['id'])
-#          img_tmp = tag.attrib['v'].replace("mapkibera","westpokot_county")
-#          print img_tmp
-#          cache_dir = get_cache_dir(way.attrib['id'], img_tmp)
-#          file_path = get_file_path(cache_dir, img_tmp, 'orig')
-#          print file_path
-#          if os.path.exists(file_path):
-#            tag.attrib['v'] = "https://mapkibera.github.io/counties/data/" + file_path
-#            way.attrib['action'] = 'modify'
-
-  writefile('build/' + ward + '-projects-ways-osm-images.xml',ET.tostring(tree.getroot()))
+  writefile('build/' + location + '-features-osm-images.xml',ET.tostring(tree.getroot()))
