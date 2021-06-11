@@ -213,7 +213,8 @@ function loadFeatures() {
     features = response;
     map.addSource('features', {
       'type': 'geojson',
-      'data': features
+      'data': features,
+      'generateId': true
     });
     addFeatureLayer();
 
@@ -352,19 +353,19 @@ function buildFilter() {
 
 function handleFeatureClick(e) {
   deselect();
-  if (e.features.length > 1) { displayProjectList(e.features); return; }
+  if (e.features.length > 1) { displayFeatureList(e.features); return; }
   displayFeature(e.features[0]);
 }
 
-function handleProjectItemClick(wb_pb_id) {
+function handleProjectItemClick(id) {
   const feature = map.queryRenderedFeatures({
     layers:['features-layer'],
-    filter: ["==", ["get", "wb_pb:id"], wb_pb_id]
+    filter: ["==", ["get", "id"], id]
   });
   displayFeature(feature[0]);
 }
 
-function displayProjectList(features) {
+function displayFeatureList(features) {
   d3.select('.entry').remove();
 
   d3.select('.list')
@@ -373,7 +374,7 @@ function displayProjectList(features) {
     .html(function(d){
       var text = "";
       for (p in features) {
-        text += "<a class='project_item' onclick='handleProjectItemClick(\"" + features[p].properties['wb_pb:id'] + "\")'>" + features[p].properties['name'] + "</a> " + features[p].properties['Project_Description'] + "<p/>";
+        text += "<a class='project_item' onclick='handleProjectItemClick(\"" + features[p].properties['id'] + "\")'>" + (features[p].properties['name'] || "feature") + "</a><br/>";
       }
       return text;
     });
