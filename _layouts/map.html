@@ -208,22 +208,19 @@ map.on('style.load', function() {
 
 var features;
 function loadFeatures() {
-  if (map.getSource('features')) {
-    addProjectLayer();
-    return;
-  }
+
   getJSON({url:'{{page.features}}'}, function(err,response){
     features = response;
     map.addSource('features', {
       'type': 'geojson',
       'data': features
     });
-    addProjectLayer();
+    addFeatureLayer();
 
   });
 };
 
-function addProjectLayer() {
+function addFeatureLayer() {
    map.addLayer({
     'id': 'features-layer',
     'type': 'symbol',
@@ -242,43 +239,6 @@ function addProjectLayer() {
         'match',
           ['get', 'Category'],
           'trade', 'shop-15',
-          'trade industrialization, investment and cooperative development', 'shop-15',
-          'trade, cooperatives and industrialization', 'shop-15',
-          'transport', 'bus-15',
-          'transport, public works and infrasctructure', 'bus-15',
-          'roads, public works, transport and infrastructure', 'bus-15',
-          'roads, transport, energy and public works', 'bus-15',
-          'agriculture', 'garden-15',
-          'agriculture, livestock and fisheries', 'garden-15',
-          'agriculture, livestock, and fisheries management', 'garden-15',
-          'pastoral economy, agriculture and irrigation', 'garden-15',
-          'water irrigati', 'drinking-water-15',
-          'water and irrigation', 'drinking-water-15',
-          'health', 'hospital-15',
-          'health services', 'hospital-15',
-          'health and sanitation', 'hospital-15',
-          'education', 'college-15',
-          'education, sports, culture and social services', 'college-15',
-          'education and technical training', 'college-15',
-          'education and vocational training', 'college-15',
-          'environment', 'park-15',
-          'environment, natural resource, tourism and wildlife management', 'park-15',
-          'tourism, wildlife management, natural resources and mining', 'park-15',
-          'water environment and natural resources', 'park-15',
-          'devolution', 'townhall-15',
-          'county assembly', 'townhall-15',
-          'public service,ict and devolved units', 'townhall-15',
-          'devolution, public service management and administration, youths and ict', 'townhall-15',
-          'office of the governor', 'townhall-15',
-          'the governor\'s office', 'townhall-15',
-          'finance', 'bank-15',
-          'finance and economic planning', 'bank-15',
-          'county finance and economic planning', 'bank-15',
-          'gender', 'triangle-15',
-          'lands, housing, physical planning and urban development', 'building-15',
-          'lands, housing and urban development', 'building-15',
-          'youth,sports, tourism,gender and social services', 'triangle-15',
-          'sports, culture, gender and social services', 'triangle-15',
           'circle-15'
       ]
     },
@@ -293,7 +253,7 @@ function addProjectLayer() {
   });
 
 
-   map.on('click', 'features-layer', handleProjectClick);
+  map.on('click', 'features-layer', handleFeatureClick);
 
   buildFilter();
   applyFilter();
@@ -309,7 +269,8 @@ function filterReports(filterAttributes, excludedValues) {
   if (excludedValues[attributeIndex].length===0) return;
   filteredResult =
     filteredResult.filter(function(project){
-      return excludedValues[attributeIndex].indexOf(project.properties[Attribute]) === -1
+      var val = project.properties[Attribute] || "undefined";
+      return excludedValues[attributeIndex].indexOf(val) === -1;
     });
   });
 
@@ -320,13 +281,15 @@ var attributesToFilter = "{{page.attributesToFilter}}".split(',');
 
 function applyFilter(){
   //generate list of all unchecked boxes, in same order as the list attributesToFilter
-  var exclusions = [[], [],[],[],[],[]];
+  var exclusions = [];
+  for (var i = 0; i < attributesToFilter.length; i++) exclusions.push([]);
+
   var unchecked =
     d3.selectAll('input:not(:checked)')
       .each(function(){
         var filterIndex = d3.select(this).attr('filterIndex');
           if (filterIndex != undefined)
-            exclusions[filterIndex].push(getSecondPart(d3.select(this).attr('id')));
+            exclusions[parseInt(filterIndex)].push(getSecondPart(d3.select(this).attr('id')));
       });
 
   map.getSource('features').setData( filterReports(attributesToFilter, exclusions) );
@@ -339,6 +302,7 @@ function buildFilter() {
     var attributeValues = [];
     features.features.forEach(function(project){
       var val = project.properties[attribute]; //.toLowerCase().replace(/_/g," ");
+      if (val == undefined) val = "undefined";
       if (val !== undefined && attributeValues.indexOf(val)==-1) attributeValues.push(val);
     });
 
@@ -386,7 +350,7 @@ function buildFilter() {
       });
 }
 
-function handleProjectClick(e) {
+function handleFeatureClick(e) {
   deselect();
   if (e.features.length > 1) { displayProjectList(e.features); return; }
   displayFeature(e.features[0]);
