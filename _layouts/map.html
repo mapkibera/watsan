@@ -68,6 +68,8 @@
     <label for='streets'>streets</label>
     <input id='satellite-streets' type='radio' name='rtoggle' value='satellite-streets'>
     <label for='satellite-streets'>satellite</label>
+    <input id='3d' type='checkbox' name='rtoggle' value='3d'>
+    <label for='poi'>3D</label>
 </div>
 
 <div id='sidebar' class='keyline-right'>
@@ -105,14 +107,28 @@ var osm_style = {
         "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ],
       "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "url": "mapbox://mapbox.satellite",
+      "tileSize": 256
     }
   },
   "layers": [{
-    "id": "openstreetmap-layer",
-    "type": "raster",
-    "source": "openstreetmap-tiles",
-    "minzoom": 0,
-    "maxzoom": 18
+      "id": "openstreetmap-layer",
+      "type": "raster",
+      "source": "openstreetmap-tiles",
+      "minzoom": 0,
+      "maxzoom": 18
+    }, {
+      "id": "satellite-layer",
+      "type": "raster",
+      "source": "satellite",
+      "minzoom": 0,
+      "maxzoom": 18,
+      "layout": {
+        "visibility": "none"
+    }
   }]
 };
 
@@ -129,10 +145,37 @@ map.addControl(new mapboxgl.NavigationControl());
 function switchLayer(layer) {
     var layerId = layer.target.id;
     if (layerId == "streets") {
-      map.setStyle(osm_style);
+      map.setLayoutProperty("satellite-layer", "visibility", "none");
     } else {
-      map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
+      map.setLayoutProperty("satellite-layer", "visibility", "visible");
     }
+}
+
+function switch3D() {
+
+  if (! map.getSource('mapbox-dem')) {
+    map.addSource('mapbox-dem', {
+      'type': 'raster-dem',
+      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+      'tileSize': 512,
+      'maxzoom': 14
+    });
+    map.addLayer({
+      'id': 'sky',
+      'type': 'sky',
+      'paint': {
+        'sky-type': 'atmosphere',
+        'sky-atmosphere-sun': [0.0, 0.0],
+        'sky-atmosphere-sun-intensity': 15
+      }
+    });
+  }
+  if (map.getTerrain()) {
+    map.setTerrain();
+  } else {
+    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 5 });
+  }
+
 }
 
 var layerList = document.getElementById('menu');
@@ -140,6 +183,7 @@ var inputs = layerList.getElementsByTagName('input');
 
 inputs[0].onclick = switchLayer;
 inputs[1].onclick = switchLayer;
+inputs[2].onclick = switch3D;
 
 var selectedFeatureId;
 
@@ -160,23 +204,6 @@ map.on('render', function() {
 <!-- LOAD Features -->
 map.on('style.load', function() {
   loadFeatures();
-
-  map.addSource('mapbox-dem', {
-    'type': 'raster-dem',
-    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-    'tileSize': 512,
-    'maxzoom': 14
-  });
-  map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 5 });
-  map.addLayer({
-    'id': 'sky',
-    'type': 'sky',
-    'paint': {
-      'sky-type': 'atmosphere',
-      'sky-atmosphere-sun': [0.0, 0.0],
-      'sky-atmosphere-sun-intensity': 15
-    }
-  });
 });
 
 var features;
