@@ -395,14 +395,17 @@ function displayFeature(p) {
       var display_text = "<table style='border-spacing: 10px'>";
 
       for (attribute in attributesToDisplay) {
-        display_text = display_text + "<tr><td>" + attributesToDisplay[attribute] + "</td><td><strong>" + p.properties[ attributesToDisplay[attribute] ] + "</strong></td></tr>";
+        if (attributesToDisplay[attribute] == "image") {
+          value = "<a target='_blank' href='" + p.properties[ attributesToDisplay[attribute] ] + "'><img src='" + p.properties[ attributesToDisplay[attribute] ] + "'/></a>";
+        } else {
+          value = p.properties[ attributesToDisplay[attribute] ];
+        }
+        display_text = display_text + "<tr><td>" + attributesToDisplay[attribute] + "</td><td><strong>" + value + "</strong></td></tr>";
       }
 
       display_text = display_text + "</table>";
       return display_text;
 
-      //<img src='" + image + "'/>
-      //href='https://www.openstreetmap.org/" + (p.geometry.type == "Point" ? "node/" : "way/") + p.properties['osm:id'
       });
 }
 
