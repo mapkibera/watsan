@@ -17,7 +17,7 @@ locations = {
   }
 }
 tag = '"amenity"="water_point"'
-startdate = '2021-04-01T00:00:00Z'
+startdate = '2021-03-01T00:00:00Z'
 
 sync_osm(locations, tag, startdate)
 convert_geojson(locations)
