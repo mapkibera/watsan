@@ -396,6 +396,7 @@ function displayFeature(p) {
 
       for (attribute in attributesToDisplay) {
         if (attributesToDisplay[attribute] == "image") {
+          if (p.properties[ attributesToDisplay[attribute]] == undefined) continue;
           value = "<a target='_blank' href='" + p.properties[ attributesToDisplay[attribute] ] + "'><img src='" + p.properties[ attributesToDisplay[attribute] ] + "'/></a>";
         } else {
           value = p.properties[ attributesToDisplay[attribute] ];
