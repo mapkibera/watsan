@@ -203,7 +203,13 @@ map.on('render', function() {
 
 <!-- LOAD Features -->
 map.on('style.load', function() {
-  loadFeatures();
+  map.loadImage('../img/circle-15.png',
+    function(error, image) {
+      if (error) throw error;
+      map.addImage('blue-circle', image);
+
+      loadFeatures();
+   });
 });
 
 var features;
@@ -240,7 +246,7 @@ function addFeatureLayer() {
         'match',
           ['get', 'Category'],
           'trade', 'shop-15',
-          'circle-15'
+          'blue-circle'
       ]
     },
     'paint': {
